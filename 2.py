@@ -45,6 +45,19 @@ model.add(layers.Dense(10, activation='softmax'))
 opt = 'rmsprop'
 model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
+# Preprocessing of the images
+# Reshape dataset to have 4D vector with the number of channels of the input image as 1 (since image is grayscale)
+train_X = train_X.reshape((60000, 28, 28, 1))
+test_X = test_X.reshape((10000, 28, 28, 1))
+
+# Normalize by rescaling pixel values from range [0, 255] to [0, 1] by 1st converting the value to float and then by dividing from max value
+train_X= train_X.astype('float32') / 255
+test_X= test_X.astype('float32') / 255
+
+# Convert to one-hot encoding
+train_y = to_categorical(train_y)
+test_y = to_categorical(test_y)
+
 # Add noise to the dataset
 noise_factor = 0.25
 train_X_noisy = train_X + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=train_X.shape)
@@ -52,19 +65,6 @@ test_X_noisy = test_X + noise_factor * np.random.normal(loc=0.0, scale=1.0, size
 
 train_X_noisy = np.clip(train_X_noisy, 0., 1.)
 test_X_noisy = np.clip(test_X_noisy, 0., 1.)
-
-# Preprocessing of the images
-# Reshape dataset to have 4D vector with the number of channels of the input image as 1 (since image is grayscale)
-train_X_noisy = train_X_noisy.reshape((60000, 28, 28, 1))
-test_X_noisy = test_X_noisy.reshape((10000, 28, 28, 1))
-
-# Normalize by rescaling pixel values from range [0, 255] to [0, 1] by 1st converting the value to float and then by dividing from max value
-train_X_noisy= train_X_noisy.astype('float32') / 255
-test_X_noisy= test_X_noisy.astype('float32') / 255
-
-# Convert to one-hot encoding
-train_y = to_categorical(train_y)
-test_y = to_categorical(test_y)
 
 history = model.fit(train_X_noisy, train_y, epochs=5, batch_size=64, validation_split=0.2)
 
